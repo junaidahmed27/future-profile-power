@@ -7,9 +7,9 @@ import { toast } from "@/hooks/use-toast";
 
 // PDF parsing
 import * as pdfjsLib from "pdfjs-dist";
-// Configure pdf.js worker via URL for Vite
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerSrc;
+// Configure pdf.js worker via CDN to avoid bundler resolution issues
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc =
+  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.mjs";
 
 // DOCX parsing
 import mammoth from "mammoth";
