@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import * as pdfjsLib from "pdfjs-dist";
 // Configure pdf.js worker via CDN to avoid bundler resolution issues
 (pdfjsLib as any).GlobalWorkerOptions.workerSrc =
-  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.mjs";
+  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
 // DOCX parsing
 import mammoth from "mammoth";
