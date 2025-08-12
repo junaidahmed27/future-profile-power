@@ -1,7 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -39,20 +39,26 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand and motion tokens */
+    --brand: 252 85% 56%;
+    --brand-2: 286 70% 60%;
+    --glow: 252 85% 56%;
+    --surface: 0 0% 100%;
+    --surface-2: 210 40% 98%;
+    --shadow-color: 222 47% 11%;
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Signature glow pointer vars */
+    --pointer-x: 50%;
+    --pointer-y: 50%;
   }
 
   .dark {
@@ -91,6 +97,11 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand tokens for dark mode */
+    --brand: 224.3 76.3% 48%;
+    --brand-2: 264 80% 65%;
+    --glow: 224.3 76.3% 48%;
   }
 }
 
@@ -101,5 +112,48 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI,
+      Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji";
+  }
+}
+
+@layer base {
+  h1 { @apply text-4xl font-extrabold tracking-tight; }
+  h2 { @apply text-2xl font-semibold tracking-tight; }
+  h3 { @apply text-xl font-semibold; }
+}
+
+@layer utilities {
+  .bg-gradient-hero {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--brand)),
+      hsl(var(--brand-2))
+    );
+  }
+  .shadow-elegant { box-shadow: 0 20px 40px -12px hsl(var(--brand) / 0.35); }
+  .shadow-glow { box-shadow: 0 0 0 3px hsl(var(--brand) / 0.25), 0 12px 30px -10px hsl(var(--brand) / 0.35); }
+
+  .glow-cursor { position: relative; }
+  .glow-cursor::before {
+    content: "";
+    position: absolute;
+    top: var(--pointer-y, 50%);
+    left: var(--pointer-x, 50%);
+    width: 480px;
+    height: 480px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background: radial-gradient(
+      400px circle at center,
+      hsl(var(--brand) / 0.28),
+      transparent 60%
+    );
+    filter: blur(40px);
+    opacity: 0.8;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glow-cursor::before { display: none; }
   }
 }
