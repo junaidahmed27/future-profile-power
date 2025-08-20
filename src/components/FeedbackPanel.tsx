@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { trackUserAction } from "@/lib/datadog";
 import type { Analysis } from "@/lib/cv-analyzer";
 
 type Props = {
@@ -43,6 +44,11 @@ export const FeedbackPanel: React.FC<Props> = ({ analysis, source }) => {
     a.recommendations.slice(0, 8).forEach((r, idx) => lines.push(`- ${r}`));
     const text = lines.join("\n");
     await navigator.clipboard.writeText(text);
+    trackUserAction('feedback_copied', { 
+      feedbackLength: text.length,
+      issueCount: analysis.issues.length,
+      scores: analysis.scores
+    });
     toast({ title: "Feedback copied", description: "Paste it into your notes or share it." });
   };
 
@@ -118,6 +124,7 @@ export const FeedbackPanel: React.FC<Props> = ({ analysis, source }) => {
           <Button variant="hero" onClick={copyFeedback}>Copy feedback</Button>
           <Button variant="outline" onClick={() => {
             navigator.clipboard.writeText(source || "");
+            trackUserAction('original_cv_copied', { textLength: source?.length || 0 });
             toast({ title: "CV text copied" });
           }}>Copy original text</Button>
         </div>

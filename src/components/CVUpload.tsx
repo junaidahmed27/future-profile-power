@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { trackCVUpload, trackError, trackUserAction } from "@/lib/datadog";
 
 // PDF parsing
 import * as pdfjsLib from "pdfjs-dist";
@@ -31,6 +32,7 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
         const content = await file.text();
         setText(content);
         onText(content);
+        trackCVUpload("txt", file.size);
         toast({ title: "Text loaded", description: `${file.name}` });
         return;
       }
@@ -40,6 +42,7 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
         const content = res.value || "";
         setText(content);
         onText(content);
+        trackCVUpload("docx", file.size);
         toast({ title: "DOCX parsed", description: `${file.name}` });
         return;
       }
@@ -55,12 +58,14 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
         fullText = fullText.replace(/\s+/g, " ").trim();
         setText(fullText);
         onText(fullText);
+        trackCVUpload("pdf", file.size);
         toast({ title: "PDF parsed", description: `${file.name}` });
         return;
       }
       toast({ title: "Unsupported file", description: "Use PDF, DOCX, or TXT.", });
     } catch (e: any) {
       console.error(e);
+      trackError(e, { context: 'file_upload', fileName: file.name });
       toast({ title: "Failed to read file", description: e?.message || "Try another file.", });
     } finally {
       setLoading(false);
@@ -84,6 +89,10 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
       toast({ title: "Paste or upload your CV first." });
       return;
     }
+    trackUserAction('cv_analysis_started', { 
+      wordCount: text.trim().split(/\s+/).filter(Boolean).length,
+      method: 'manual_text'
+    });
     onText(text);
     toast({ title: "Analyzing CV...", description: "Generating feedback" });
   }, [onText, text]);

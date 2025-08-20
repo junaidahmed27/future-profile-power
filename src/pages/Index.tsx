@@ -4,6 +4,7 @@ import { CVUpload } from "@/components/CVUpload";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { Button } from "@/components/ui/button";
 import { SignatureField } from "@/components/SignatureField";
+import { trackCVAnalysis, trackUserAction } from "@/lib/datadog";
 
 const Index = () => {
   const [source, setSource] = useState("");
@@ -12,6 +13,15 @@ const Index = () => {
     setSource(text);
     const result = analyzeCV(text);
     setAnalysis(result);
+    
+    // Track the analysis results
+    trackCVAnalysis({
+      coverage: result.scores.coverage,
+      specificity: result.scores.specificity,
+      impact: result.scores.impact,
+      wordCount: result.metrics.words,
+      issueCount: result.issues.length,
+    });
   };
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +35,10 @@ const Index = () => {
               Upload your CV and get instant, actionable feedback to strengthen college applications and build a standout early career profile.
             </p>
             <div className="mt-6 flex justify-center gap-3">
-              <Button variant="hero" size="lg" onClick={() => mainRef.current?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button variant="hero" size="lg" onClick={() => {
+                trackUserAction('cta_clicked', { button: 'get_feedback_now' });
+                mainRef.current?.scrollIntoView({ behavior: 'smooth' });
+              }}>
                 Get feedback now
               </Button>
               <Button variant="outline" size="lg" asChild>
