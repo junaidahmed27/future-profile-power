@@ -18,7 +18,7 @@ const DATADOG_CONFIG = {
 
 export function initializeDatadog() {
   try {
-    // Initialize RUM (Real User Monitoring)
+    // Initialize RUM (Real User Monitoring) with distributed tracing
     datadogRum.init({
       applicationId: DATADOG_CONFIG.applicationId,
       clientToken: DATADOG_CONFIG.clientToken,
@@ -32,6 +32,11 @@ export function initializeDatadog() {
       trackResources: DATADOG_CONFIG.trackResources,
       trackLongTasks: DATADOG_CONFIG.trackLongTasks,
       defaultPrivacyLevel: 'mask-user-input',
+      // Enable distributed tracing
+      allowedTracingUrls: [
+        { match: '*', propagatorTypes: ['datadog', 'tracecontext'] }
+      ],
+      traceSampleRate: 100,
     });
 
     // Initialize Logs
@@ -45,7 +50,7 @@ export function initializeDatadog() {
       sessionSampleRate: 100,
     });
 
-    console.log('Datadog monitoring initialized successfully');
+    console.log('Datadog monitoring with distributed tracing initialized successfully');
   } catch (error) {
     console.error('Failed to initialize Datadog:', error);
   }
@@ -96,4 +101,63 @@ export const trackError = (error: Error, context?: Record<string, any>) => {
 export const trackUserAction = (actionName: string, properties?: Record<string, any>) => {
   datadogRum.addAction(actionName, properties);
   datadogLogs.logger.info(`User action: ${actionName}`, properties);
+};
+
+// Distributed tracing functions using RUM SDK
+export const startCustomTrace = (operationName: string, context?: Record<string, any>) => {
+  datadogRum.addAction(`${operationName}_started`, {
+    ...context,
+    phase: 'start',
+    timestamp: Date.now(),
+  });
+  datadogLogs.logger.info(`Starting operation: ${operationName}`, context);
+};
+
+export const finishCustomTrace = (operationName: string, context?: Record<string, any>) => {
+  datadogRum.addAction(`${operationName}_completed`, {
+    ...context,
+    phase: 'complete',
+    completed: true,
+    timestamp: Date.now(),
+  });
+  datadogLogs.logger.info(`Completed operation: ${operationName}`, context);
+};
+
+export const traceAsyncOperation = async <T>(
+  operationName: string,
+  operation: () => Promise<T>,
+  context?: Record<string, any>
+): Promise<T> => {
+  const startTime = Date.now();
+  startCustomTrace(operationName, context);
+  
+  try {
+    const result = await operation();
+    const duration = Date.now() - startTime;
+    
+    finishCustomTrace(operationName, {
+      ...context,
+      success: true,
+      duration,
+    });
+    
+    return result;
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    finishCustomTrace(operationName, {
+      ...context,
+      success: false,
+      duration,
+      error: errorMessage,
+    });
+    
+    trackError(error instanceof Error ? error : new Error(errorMessage), {
+      operation: operationName,
+      context,
+    });
+    
+    throw error;
+  }
 };
