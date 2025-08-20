@@ -4,14 +4,19 @@ import { CVUpload } from "@/components/CVUpload";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { Button } from "@/components/ui/button";
 import { SignatureField } from "@/components/SignatureField";
-import { trackCVAnalysis, trackUserAction } from "@/lib/datadog";
+import { trackCVAnalysis, trackUserAction, traceAsyncOperation } from "@/lib/datadog";
 
 const Index = () => {
   const [source, setSource] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const analyze = (text: string) => {
+  const analyze = async (text: string) => {
     setSource(text);
-    const result = analyzeCV(text);
+    const result = await traceAsyncOperation('cv_analysis', async () => {
+      return analyzeCV(text);
+    }, {
+      textLength: text.length,
+      wordCount: text.split(/\s+/).filter(Boolean).length
+    });
     setAnalysis(result);
     
     // Track the analysis results

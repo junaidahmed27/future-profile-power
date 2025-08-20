@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { trackCVUpload, trackError, trackUserAction } from "@/lib/datadog";
+import { trackCVUpload, trackError, trackUserAction, traceAsyncOperation } from "@/lib/datadog";
 
 // PDF parsing
 import * as pdfjsLib from "pdfjs-dist";
@@ -26,7 +26,7 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
 
   const handleFiles = useCallback(async (file: File) => {
     setLoading(true);
-    try {
+    await traceAsyncOperation('cv_file_processing', async () => {
       const ext = file.name.toLowerCase().split(".").pop();
       if (ext === "txt") {
         const content = await file.text();
@@ -63,13 +63,18 @@ export const CVUpload: React.FC<Props> = ({ onText }) => {
         return;
       }
       toast({ title: "Unsupported file", description: "Use PDF, DOCX, or TXT.", });
-    } catch (e: any) {
+    }, {
+      fileType: file.type,
+      fileSize: file.size,
+      fileName: file.name,
+      fileExtension: file.name.toLowerCase().split(".").pop()
+    }).catch((e: any) => {
       console.error(e);
       trackError(e, { context: 'file_upload', fileName: file.name });
       toast({ title: "Failed to read file", description: e?.message || "Try another file.", });
-    } finally {
+    }).finally(() => {
       setLoading(false);
-    }
+    });
   }, [onText]);
 
   const onDrop = useCallback((e: React.DragEvent) => {
