@@ -146,7 +146,7 @@ function analyzeCV(raw: string): Analysis {
   if (numbers < Math.max(2, Math.round(words / 120))) {
     issues.push({
       title: "Not enough measurable results",
-      detail: "Quantify impact (e.g., "raised $2,300", "grew membership 35%", "taught 20 peers").",
+      detail: 'Quantify impact (e.g., "raised $2,300", "grew membership 35%", "taught 20 peers").',
       severity: "medium",
     });
   }
