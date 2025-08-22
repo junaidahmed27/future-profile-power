@@ -3,9 +3,9 @@ import { datadogLogs } from '@datadog/browser-logs';
 
 // Datadog configuration
 const DATADOG_CONFIG = {
-  applicationId: 'YOUR_APPLICATION_ID', // Replace with your Datadog Application ID
-  clientToken: 'YOUR_CLIENT_TOKEN', // Replace with your Datadog Client Token
-  site: 'datadoghq.com' as const, // or 'datadoghq.eu' for EU
+  applicationId: 'c0ba3158-b3de-4fff-92d2-3bc6e1c55070', // Replace with your Datadog Application ID
+  clientToken: 'pubf0c1bee78435f20b13bc86aace534e86', // Replace with your Datadog Client Token
+  site: 'us5.datadoghq.com' as const, // or 'datadoghq.eu' for EU
   service: 'cv-analyzer',
   env: 'production', // or 'development'
   version: '1.0.0',
