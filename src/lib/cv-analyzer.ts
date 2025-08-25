@@ -52,6 +52,8 @@ const leadershipScore = (text: string) => (text.match(/president|captain|lead|le
 const awardsScore = (text: string) => (text.match(/award|honor|scholarship|finalist|winner/gi) || []).length;
 
 export function analyzeCV(raw: string): Analysis {
+
+  
   const text = (raw || "").replace(/\s+/g, " ").trim();
   const words = text ? text.split(/\s+/).length : 0;
   const lines = raw.split(/\n|\r/);
@@ -163,6 +165,11 @@ export function analyzeCV(raw: string): Analysis {
     recs.push("Seek leadership: start a club, captain a team, or lead an event—then quantify outcomes.");
   }
 
+  let myString: string = "123"; // Fixed: Convert number to string
+  recs.push(myString)
+ // Test error for debugging
+ throw new Error("this is a test error");
+  
   const summary = `Coverage ${coverage}%, Specificity ${specificity}%, Impact ${impact}%. Focus on measurable results, strong verbs, and clear sections.`;
 
   return {
